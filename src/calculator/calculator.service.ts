@@ -5,12 +5,12 @@ import { CalculatorResult } from './models/calculatorResult.model';
 @Injectable()
 class CalculatorService {
   public getTax(vehicle: VehicleType, dates: Date[]): CalculatorResult {
-    const intervalStart: number = dates.splice(1)[0].getTime();
+    const intervalStart: number = dates[0].getTime();
     let prevFee = 0;
 
     const totalFee = dates
       .sort((a, b) => a.getTime() - b.getTime())
-      .reduce((fee, date: Date) => {
+      .reduce((fee: number, date: Date) => {
         const currentFee: number = this.getTollFee(date, vehicle);
         const diffInMillies: number = date.getTime() - intervalStart;
         const minutes: number = diffInMillies / 1000 / 60;
@@ -19,8 +19,8 @@ class CalculatorService {
           return fee + currentFee;
         }
         if (prevFee < currentFee) {
+          fee = fee - prevFee + currentFee;
           prevFee = currentFee;
-          return fee - prevFee + currentFee;
         }
 
         return fee;
@@ -34,7 +34,7 @@ class CalculatorService {
 
     switch (vehicle) {
       case 'Car':
-        return true;
+        return false;
       case 'Diplomat':
       case 'Emergency':
       case 'Busses':
@@ -42,7 +42,7 @@ class CalculatorService {
       case 'Military':
       case 'Motorcycle':
       case 'Tractor':
-        return false;
+        return true;
       default:
         this.notHappening(vehicle);
     }
@@ -78,6 +78,7 @@ class CalculatorService {
     const year: number = date.getFullYear();
     const month: number = date.getMonth() + 1;
     const day: number = date.getDay() + 1;
+    const dayOfMonth: number = date.getDate();
 
     // is weekend
     if (day === 7 || day === 1) return true;
@@ -94,7 +95,7 @@ class CalculatorService {
       12: [24, 25, 26, 31],
     };
 
-    if (year === 2013 && publicHolidays[month]?.includes(day)) {
+    if (year === 2013 && publicHolidays[month]?.includes(dayOfMonth)) {
       return true;
     }
 
